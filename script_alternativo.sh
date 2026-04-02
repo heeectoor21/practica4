@@ -2,10 +2,8 @@
 #898447, Alejaldre Martin, Hector, M, 3, B
 #926915, Blanco Ramos, Nestor, M, 3, B
 
-# Parámetros: $1: {-a|-s}, $2: <fichero_usuarios>, $3: <fichero_máquinas>
-
 # Comprobación de permisos
-if ! id -nG "$USER" | grep -qw sudo
+if id -nG "$USER" | grep -qw sudo
 then
     echo "Este script necesita privilegios de administracion"
     exit 1
@@ -55,8 +53,12 @@ log() {
     echo "$1" >> "$LOG_FILE"
 }
 
+# Leer ficheros completos en arrays ANTES de los bucles
+mapfile -t MAQUINAS < "$FICHERO_MAQUINAS"
+mapfile -t USUARIOS < "$FICHERO_USUARIOS"
+
 # Iterar sobre cada máquina
-while IFS= read -r MAQUINA || [ -n "$MAQUINA" ]
+for MAQUINA in "${MAQUINAS[@]}"
 do
     [ -z "$MAQUINA" ] && continue
 
@@ -69,12 +71,17 @@ do
     fi
     echo ">>> Conectado a $MAQUINA"
 
-    if [ "$OPCION" = "-a" ]
-    then
-        while IFS=',' read -r USR PASS FULLNAME || [ -n "$USR" ]
-        do
-            [ -z "$USR" ] && [ -z "$PASS" ] && [ -z "$FULLNAME" ] && continue
+    # Iterar sobre cada usuario
+    for LINEA in "${USUARIOS[@]}"
+    do
+        [ -z "$LINEA" ] && continue
 
+        USR=$(echo "$LINEA" | cut -d',' -f1)
+        PASS=$(echo "$LINEA" | cut -d',' -f2)
+        FULLNAME=$(echo "$LINEA" | cut -d',' -f3)
+
+        if [ "$OPCION" = "-a" ]
+        then
             if [ -z "$USR" ] || [ -z "$PASS" ] || [ -z "$FULLNAME" ]
             then
                 log "[$MAQUINA] Campo invalido"
@@ -119,12 +126,8 @@ do
 
             log "[$MAQUINA] $USR ha sido creado"
 
-        done < "$FICHERO_USUARIOS"
-
-    elif [ "$OPCION" = "-s" ]
-    then
-        while IFS=',' read -r USR _ || [ -n "$USR" ]
-        do
+        elif [ "$OPCION" = "-s" ]
+        then
             [ -z "$USR" ] && continue
 
             # Conexión 1: comprobar si el usuario existe
@@ -149,10 +152,10 @@ do
             echo "[$MAQUINA] Usuario $USR eliminado del sistema"
 
             log "[$MAQUINA] $USR ha sido eliminado"
+        fi
 
-        done < "$FICHERO_USUARIOS"
-    fi
+    done
 
-done < "$FICHERO_MAQUINAS"
+done
 
 exit 0
