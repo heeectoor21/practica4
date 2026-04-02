@@ -46,7 +46,7 @@ USUARIO=$(whoami)
 LOG_FILE="${FECHA}_${USUARIO}_provisioning.log"
 touch "$LOG_FILE"
 
-SSH="ssh -q -o BatchMode=yes -o ConnectTimeout=5 -i ~/.ssh/id_as_ed25519"
+SSH="ssh -q"
 
 log() {
     echo "$1"
@@ -118,7 +118,7 @@ do
             # Conexión 5: configurar expiración
             $SSH as@"$MAQUINA" "sudo chage -M 30 '$USR'" 2>/dev/null
 
-            log "[$MAQUINA] $USR ha sido creado"
+            log "$USR ha sido creado"
 
         elif [ "$OPCION" = "-s" ]
         then
