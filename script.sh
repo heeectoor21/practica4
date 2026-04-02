@@ -52,13 +52,15 @@ then
     touch "$LOG_FILE"
 fi
  
+SSH="ssh -q -T -i ~/.ssh/id_as_ed25519"
+ 
 # Iterar sobre cada máquina (descriptor 4)
 while IFS= read -r MAQUINA <&4 || [ -n "$MAQUINA" ]
 do
     [ -z "$MAQUINA" ] && continue
  
     # Comprobar si la máquina es accesible
-    ssh -i ~/.ssh/id_as_ed25519 as@"$MAQUINA" "true" &>/dev/null
+    $SSH as@"$MAQUINA" "true" &>/dev/null
     if [ $? -ne 0 ]
     then
         echo "$MAQUINA no es accesible"
@@ -68,7 +70,6 @@ do
  
     if [ "$OPCION" = "-a" ]
     then
-        # Iterar sobre usuarios (descriptor 3)
         while IFS=',' read -r USR PASS FULLNAME <&3 || [ -n "$USR" ]
         do
             [ -z "$USR" ] && [ -z "$PASS" ] && [ -z "$FULLNAME" ] && continue
@@ -80,7 +81,7 @@ do
                 continue
             fi
  
-            RESULTADO=$(ssh -i ~/.ssh/id_as_ed25519 as@"$MAQUINA" << ENDSSH
+            RESULTADO=$($SSH as@"$MAQUINA" << ENDSSH
                 if id '$USR' > /dev/null 2>&1
                 then
                     echo "El usuario $USR ya existe"
@@ -106,12 +107,11 @@ ENDSSH
  
     elif [ "$OPCION" = "-s" ]
     then
-        # Iterar sobre usuarios (descriptor 3)
         while IFS=',' read -r USR _ <&3 || [ -n "$USR" ]
         do
             [ -z "$USR" ] && continue
  
-            RESULTADO=$(ssh -i ~/.ssh/id_as_ed25519 as@"$MAQUINA" << ENDSSH
+            RESULTADO=$($SSH as@"$MAQUINA" << ENDSSH
                 if ! id '$USR' > /dev/null 2>&1
                 then
                     echo "El usuario $USR no existe"
@@ -132,3 +132,4 @@ ENDSSH
 done 4< "$FICHERO_MAQUINAS"
  
 exit 0
+ 
