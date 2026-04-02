@@ -69,7 +69,6 @@ do
         log "$MAQUINA no es accesible"
         continue
     fi
-    echo ">>> Conectado a $MAQUINA"
 
     # Iterar sobre cada usuario
     for LINEA in "${USUARIOS[@]}"
@@ -95,7 +94,6 @@ do
                 log "[$MAQUINA] El usuario $USR ya existe"
                 continue
             fi
-            echo "[$MAQUINA] Comprobado: $USR no existe"
 
             # Conexión 2: obtener siguiente UID
             UID_ACTUAL=$($SSH as@"$MAQUINA" "tail -n 1 /etc/passwd | cut -d: -f3" 2>/dev/null)
@@ -105,7 +103,6 @@ do
             else
                 NUEVO_UID=1815
             fi
-            echo "[$MAQUINA] UID calculado para $USR: $NUEVO_UID"
 
             # Conexión 3: crear usuario
             $SSH as@"$MAQUINA" "sudo /usr/sbin/useradd -m -k /etc/skel -u $NUEVO_UID -U -c '$FULLNAME' '$USR'" 2>/dev/null
@@ -114,15 +111,12 @@ do
                 log "[$MAQUINA] Error al crear usuario $USR"
                 continue
             fi
-            echo "[$MAQUINA] Usuario $USR creado en el sistema"
 
             # Conexión 4: asignar contraseña
             $SSH as@"$MAQUINA" "echo '$USR:$PASS' | sudo /usr/sbin/chpasswd" 2>/dev/null
-            echo "[$MAQUINA] Contraseña de $USR asignada"
 
             # Conexión 5: configurar expiración
             $SSH as@"$MAQUINA" "sudo chage -M 30 '$USR'" 2>/dev/null
-            echo "[$MAQUINA] Expiración de contraseña de $USR configurada a 30 días"
 
             log "[$MAQUINA] $USR ha sido creado"
 
@@ -137,19 +131,15 @@ do
                 log "[$MAQUINA] El usuario $USR no existe"
                 continue
             fi
-            echo "[$MAQUINA] Comprobado: $USR existe"
 
             # Conexión 2: crear directorio de backup
             $SSH as@"$MAQUINA" "sudo mkdir -p /extra/backup" 2>/dev/null
-            echo "[$MAQUINA] Directorio de backup verificado"
 
             # Conexión 3: hacer backup del home
             $SSH as@"$MAQUINA" "sudo tar -cf /extra/backup/${USR}.tar -C /home '$USR'" 2>/dev/null
-            echo "[$MAQUINA] Backup de $USR realizado en /extra/backup/${USR}.tar"
 
             # Conexión 4: eliminar usuario
             $SSH as@"$MAQUINA" "sudo /usr/sbin/userdel -r '$USR' 2>/dev/null; true" 2>/dev/null
-            echo "[$MAQUINA] Usuario $USR eliminado del sistema"
 
             log "[$MAQUINA] $USR ha sido eliminado"
         fi
