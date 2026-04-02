@@ -10,8 +10,6 @@ Hay que incluir las comprobaciones de ping y tal en este documento.
 
 Hay que indicar en este documento las máquinas virtuales que has utilizado con sus direcciones IP e identificadores MAC. Las IPs de las máquinas remotas deben ser 192.168.56.11 y 192.168.56.12 para poder pasar los test.
 
-
-
 Para la parte 2:
 
 Hemos configurado las interfaces enp0s3 y enp0s8 (aunque la primera ya estaba configurada) en el fichero /etc/network/interfaces. Añadiendo en las máquinas virtuales auto enp0s8, y iface enp0s8 inet static address 192.168.56.xx (xx = 10, 11, 12 para las distintas máquinas, 10 es el host) netmask 255.255.255.0.
