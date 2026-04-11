@@ -46,7 +46,7 @@ USUARIO=$(whoami)
 LOG_FILE="${FECHA}_${USUARIO}_provisioning.log"
 touch "$LOG_FILE"
 
-SSH="ssh -q"
+SSH="ssh -q -o BatchMode=yes -o ConnectTimeout=5 -i ~/.ssh/id_as_ed25519"
 
 log() {
     echo "$1"
@@ -128,7 +128,7 @@ do
             $SSH as@"$MAQUINA" "id '$USR'" > /dev/null 2>&1
             if [ $? -ne 0 ]
             then
-                log "[$MAQUINA] El usuario $USR no existe"
+                #log "[$MAQUINA] El usuario $USR no existe"
                 continue
             fi
 
